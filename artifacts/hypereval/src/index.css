@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,300..800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Deep dark web3 theme palette */
+  --color-background: hsl(224, 71%, 4%);
+  --color-foreground: hsl(210, 40%, 98%);
+  
+  --color-card: hsl(224, 71%, 7%);
+  --color-card-foreground: hsl(210, 40%, 98%);
+  
+  --color-popover: hsl(224, 71%, 7%);
+  --color-popover-foreground: hsl(210, 40%, 98%);
+  
+  /* Primary Accent: Hypercerts Green */
+  --color-primary: hsl(142, 71%, 45%);
+  --color-primary-foreground: hsl(144, 100%, 11%);
+  
+  --color-secondary: hsl(224, 71%, 12%);
+  --color-secondary-foreground: hsl(210, 40%, 98%);
+  
+  --color-muted: hsl(224, 71%, 12%);
+  --color-muted-foreground: hsl(215, 20%, 65%);
+  
+  --color-accent: hsl(142, 71%, 45%);
+  --color-accent-foreground: hsl(144, 100%, 11%);
+  
+  --color-destructive: hsl(0, 84%, 60%);
+  --color-destructive-foreground: hsl(210, 40%, 98%);
+  
+  --color-warning: hsl(48, 96%, 53%);
+  --color-warning-foreground: hsl(38, 92%, 10%);
+  
+  --color-border: hsl(224, 71%, 14%);
+  --color-input: hsl(224, 71%, 14%);
+  --color-ring: hsl(142, 71%, 45%);
+
+  --radius-xl: 1rem;
+  --radius-lg: 0.75rem;
+  --radius-md: 0.5rem;
+  --radius-sm: 0.25rem;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased min-h-screen selection:bg-primary/30 selection:text-primary-foreground;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-background/60 backdrop-blur-xl border border-white/5 shadow-2xl;
+  }
+  .card-gradient {
+    background: radial-gradient(circle at top right, hsl(224, 71%, 10%), hsl(224, 71%, 6%));
+  }
+  .text-gradient-primary {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-emerald-300;
+  }
+  
+  /* Hide scrollbar for a cleaner look but allow scrolling */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

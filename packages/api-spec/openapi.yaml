@@ -1,0 +1,698 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: HyperEval API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: hypercerts
+    description: Hypercerts data operations
+  - name: evaluation
+    description: AI evaluation operations
+  - name: extraction
+    description: Data extraction operations
+  - name: agent
+    description: Public agent evaluation API
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /hypercerts:
+    get:
+      operationId: listHypercerts
+      tags: [hypercerts]
+      summary: List hypercerts with pagination
+      parameters:
+        - name: first
+          in: query
+          schema:
+            type: integer
+            default: 12
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        "200":
+          description: List of hypercerts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HypercertsListResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /hypercerts/{id}:
+    get:
+      operationId: getHypercertById
+      tags: [hypercerts]
+      summary: Get a single hypercert by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Hypercert detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HypercertDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /search:
+    get:
+      operationId: searchHypercerts
+      tags: [hypercerts]
+      summary: Search hypercerts by name
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HypercertsListResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /evaluate:
+    post:
+      operationId: evaluateHypercert
+      tags: [evaluation]
+      summary: Evaluate a hypercert using multi-agent AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvaluateRequest"
+      responses:
+        "200":
+          description: Evaluation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvaluationResult"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /extract:
+    post:
+      operationId: extractImpactData
+      tags: [extraction]
+      summary: Extract structured impact data from text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExtractRequest"
+      responses:
+        "200":
+          description: Extracted data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtractResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /v1/agent:
+    get:
+      operationId: getAgentInfo
+      tags: [agent]
+      summary: Get agent endpoint documentation
+      responses:
+        "200":
+          description: Agent endpoint documentation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentInfo"
+  /v1/agent/evaluate:
+    post:
+      operationId: agentEvaluate
+      tags: [agent]
+      summary: Public agent evaluation API
+      description: Evaluate a hypercert by ID or by passing data directly. Designed to be called by other AI agents, platforms, or tools.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentEvaluateRequest"
+      responses:
+        "200":
+          description: Agent evaluation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentEvaluateResponse"
+        "400":
+          description: Missing input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Hypercert not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Evaluation failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        timestamp:
+          type: string
+        hasApiKey:
+          type: boolean
+      required:
+        - status
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    HypercertMetadata:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        image:
+          type: string
+          nullable: true
+        work_scope:
+          type: array
+          items:
+            type: string
+          nullable: true
+        impact_scope:
+          type: array
+          items:
+            type: string
+          nullable: true
+        contributors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        work_timeframe_from:
+          type: string
+          nullable: true
+        work_timeframe_to:
+          type: string
+          nullable: true
+        impact_timeframe_from:
+          type: string
+          nullable: true
+        impact_timeframe_to:
+          type: string
+          nullable: true
+    HypercertAttestations:
+      type: object
+      properties:
+        count:
+          type: integer
+      required:
+        - count
+    HypercertContract:
+      type: object
+      properties:
+        chain_id:
+          type: integer
+          nullable: true
+    Hypercert:
+      type: object
+      properties:
+        hypercert_id:
+          type: string
+        uri:
+          type: string
+          nullable: true
+        creator_address:
+          type: string
+          nullable: true
+        units:
+          type: string
+          nullable: true
+        contract:
+          $ref: "#/components/schemas/HypercertContract"
+          nullable: true
+        metadata:
+          $ref: "#/components/schemas/HypercertMetadata"
+          nullable: true
+        attestations:
+          $ref: "#/components/schemas/HypercertAttestations"
+          nullable: true
+      required:
+        - hypercert_id
+    HypercertsListResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Hypercert"
+      required:
+        - count
+        - data
+    AttestationDetail:
+      type: object
+      properties:
+        uid:
+          type: string
+        attester:
+          type: string
+          nullable: true
+        data:
+          type: string
+          nullable: true
+        creation_block_timestamp:
+          type: string
+          nullable: true
+      required:
+        - uid
+    AttestationsDetail:
+      type: object
+      properties:
+        count:
+          type: integer
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttestationDetail"
+          nullable: true
+      required:
+        - count
+    FractionDetail:
+      type: object
+      properties:
+        owner_address:
+          type: string
+        units:
+          type: string
+          nullable: true
+      required:
+        - owner_address
+    FractionsDetail:
+      type: object
+      properties:
+        count:
+          type: integer
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/FractionDetail"
+          nullable: true
+      required:
+        - count
+    HypercertDetail:
+      type: object
+      properties:
+        hypercert_id:
+          type: string
+        uri:
+          type: string
+          nullable: true
+        creator_address:
+          type: string
+          nullable: true
+        units:
+          type: string
+          nullable: true
+        contract:
+          $ref: "#/components/schemas/HypercertContract"
+          nullable: true
+        metadata:
+          $ref: "#/components/schemas/HypercertMetadata"
+          nullable: true
+        attestations:
+          $ref: "#/components/schemas/AttestationsDetail"
+          nullable: true
+        fractions:
+          $ref: "#/components/schemas/FractionsDetail"
+          nullable: true
+      required:
+        - hypercert_id
+    EvaluateRequest:
+      type: object
+      properties:
+        hypercertData:
+          type: object
+          additionalProperties: true
+        customContext:
+          type: string
+          nullable: true
+      required:
+        - hypercertData
+    AgentFinding:
+      type: object
+      properties:
+        aspect:
+          type: string
+        status:
+          type: string
+          nullable: true
+        rating:
+          type: string
+          nullable: true
+        detail:
+          type: string
+      required:
+        - aspect
+        - detail
+    AgentResult:
+      type: object
+      properties:
+        score:
+          type: integer
+        confidence:
+          type: integer
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentFinding"
+        summary:
+          type: string
+        label:
+          type: string
+        weight:
+          type: number
+      required:
+        - score
+        - confidence
+        - findings
+        - summary
+        - label
+        - weight
+    EvaluationAgents:
+      type: object
+      properties:
+        claimVerification:
+          $ref: "#/components/schemas/AgentResult"
+        evidenceQuality:
+          $ref: "#/components/schemas/AgentResult"
+        impactMagnitude:
+          $ref: "#/components/schemas/AgentResult"
+      required:
+        - claimVerification
+        - evidenceQuality
+        - impactMagnitude
+    EvaluationResult:
+      type: object
+      properties:
+        hypercertId:
+          type: string
+        hypercertName:
+          type: string
+        overallScore:
+          type: integer
+        confidence:
+          type: integer
+        verdict:
+          type: string
+        verdictLabel:
+          type: string
+        evaluatedAt:
+          type: string
+        evaluationTimeMs:
+          type: integer
+        agents:
+          $ref: "#/components/schemas/EvaluationAgents"
+        attestation:
+          $ref: "#/components/schemas/EASAttestation"
+          nullable: true
+        lexiconCompatible:
+          $ref: "#/components/schemas/LexiconCompatible"
+          nullable: true
+      required:
+        - hypercertId
+        - hypercertName
+        - overallScore
+        - confidence
+        - verdict
+        - verdictLabel
+        - evaluatedAt
+        - evaluationTimeMs
+        - agents
+    ExtractRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          nullable: true
+        url:
+          type: string
+          nullable: true
+    ExtractedEvidence:
+      type: object
+      properties:
+        type:
+          type: string
+        value:
+          type: string
+      required:
+        - type
+        - value
+    ExtractedData:
+      type: object
+      properties:
+        name:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        work_scope:
+          type: array
+          items:
+            type: string
+          nullable: true
+        impact_scope:
+          type: array
+          items:
+            type: string
+          nullable: true
+        contributors:
+          type: array
+          items:
+            type: string
+          nullable: true
+        work_timeframe:
+          type: object
+          nullable: true
+          additionalProperties: true
+        impact_timeframe:
+          type: object
+          nullable: true
+          additionalProperties: true
+        evidence:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExtractedEvidence"
+          nullable: true
+        extracted_metrics:
+          type: object
+          nullable: true
+          additionalProperties: true
+        confidence_notes:
+          type: string
+          nullable: true
+    ExtractResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        extracted:
+          $ref: "#/components/schemas/ExtractedData"
+          nullable: true
+        sourceType:
+          type: string
+          nullable: true
+        extractedAt:
+          type: string
+        error:
+          type: string
+          nullable: true
+      required:
+        - success
+        - extractedAt
+    EASAttestation:
+      type: object
+      properties:
+        success:
+          type: boolean
+        attestation:
+          type: object
+          additionalProperties: true
+        attester:
+          type: string
+        schema:
+          type: string
+        type:
+          type: string
+        note:
+          type: string
+          nullable: true
+    LexiconCompatible:
+      type: object
+      properties:
+        $type:
+          type: string
+        subject:
+          type: object
+          additionalProperties: true
+        evaluator:
+          type: object
+          additionalProperties: true
+        scores:
+          type: object
+          additionalProperties: true
+        verdict:
+          type: string
+        confidence:
+          type: number
+        methodology:
+          type: string
+        findings:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        createdAt:
+          type: string
+    AgentInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        endpoints:
+          type: object
+          additionalProperties: true
+        capabilities:
+          type: array
+          items:
+            type: string
+    AgentEvaluateRequest:
+      type: object
+      properties:
+        hypercert_id:
+          type: string
+          nullable: true
+        hypercert_data:
+          type: object
+          additionalProperties: true
+          nullable: true
+        context:
+          type: string
+          nullable: true
+    AgentEvaluateResponse:
+      type: object
+      properties:
+        agent:
+          type: string
+        version:
+          type: string
+        timestamp:
+          type: string
+        input:
+          type: object
+          additionalProperties: true
+        evaluation:
+          type: object
+          additionalProperties: true
+        attestation:
+          $ref: "#/components/schemas/EASAttestation"
+          nullable: true
+        lexiconCompatible:
+          $ref: "#/components/schemas/LexiconCompatible"
+          nullable: true
+        meta:
+          type: object
+          additionalProperties: true

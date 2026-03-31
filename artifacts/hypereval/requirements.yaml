@@ -1,0 +1,11 @@
+packages:
+  "framer-motion": "For smooth transitions and beautiful score ring animations"
+  "clsx": "For merging tailwind classes conditionally"
+  "tailwind-merge": "For resolving tailwind class conflicts"
+  "date-fns": "For formatting dates in the evaluation history"
+
+images: []
+
+notes:
+  - "The app uses a unified dark theme appropriate for web3/crypto tools"
+  - "State for active tabs and evaluation history is managed at the Dashboard level"
